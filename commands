@@ -1,0 +1,126 @@
+#create a directory
+mkdir foo
+
+#change into the directory
+cd foo
+
+#initialize the git repository
+git init
+
+#set your git credentials
+git config --list
+
+#create a file called README
+echo "please, read me" > README
+git status
+
+#stage README
+git add README
+git status
+
+#create the initial commit
+git commit -m "Create README"
+git branch -v
+git log
+
+#switch to a work branch
+git checkout -b work
+git branch -v
+
+#create a file "numbers" and commit
+seq 5 > numbers.txt
+git stage numbers.txt
+git commit -a -m "Create numbers, Add 1-5"
+git show
+
+#create three work branches
+git checkout -b arnold
+git checkout -b bruce
+git checkout -b charlize
+
+#arnold adds 0 to the beginning of the file
+git checkout arnold
+(echo 0; cat numbers.txt) | sponge numbers.txt
+git commit -a -m "Add 0"
+git show
+
+#bruce adds 6 to the end
+git checkout bruce
+echo 6 >> numbers.txt
+git commit -a -m "Add 6"
+git show
+
+#charlize adds 7 to the end
+git checkout charlize
+echo 7 >> numbers.txt
+git commit -a -m "Add 7"
+git show
+
+#switch back to the work branch
+git checkout work
+
+#merge arnold's work --fast forwards merge
+git merge arnold
+git show
+
+#merge bruce's work --recursive merge
+git merge bruce --no-edit
+git show
+
+#merge charlize's work --conflict with bruce
+git merge charlize
+
+#fix the merge conflict
+emacs numbers.txt
+git add numbers.txt
+git commit --no-edit
+git show
+
+#create a branch for donald
+git checkout -b donald
+echo 8 >> numbers.txt
+#make a mistake here and commit
+echo 4 >> numbers.txt
+git commit -a -m "Add 8 and 9"
+git show
+
+#fix the mistake
+sed -i '$ d' numbers.txt
+echo 9 >> numbers.txt
+git add numbers.txt
+
+#amend the previous commit
+git commit --amend --no-edit
+git show
+git log -4
+
+#make a mistake here and commit
+echo 1011 >> numbers.txt
+echo 12 >> numbers.txt
+git commit -a -m "Add 10 - 12"
+
+#add a good commit on top of the bad commit
+for i in {13..20}; do echo $i >> numbers.txt; done
+git commit -a -m "Add 13 - 20"
+git show HEAD~1
+
+#create a fix commit
+emacs numbers.txt
+git commit -a -m "Fix 10 - 11"
+git log -4
+
+#rebase the fix commit into the bad commit using fixup
+git rebase -i HEAD~4
+
+git log -4
+
+#squash donald's three commits into work
+git checkout work
+git merge donald --squash
+git commit -m "Added 8 - 20"
+git log -3
+
+#show the history
+git reflog
+
+#done
